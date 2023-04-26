@@ -7,56 +7,50 @@
 //
 
 import UIKit
+import AVFoundation
 
 
 class ViewController: UIViewController {
     
-    //soft egg - 5 mins
-    //medium egg - 8 mins
-    //hard egg - 12 mins
-    let eggTimes = ["Soft": 5, "Medium": 8, "Hard": 12]
+    @IBOutlet weak var eggLabel: UILabel!
+    @IBOutlet weak var eggProgress: UIProgressView!
+  
+//    let eggTimes = ["Soft": 300, "Medium": 480, "Hard": 720]
+    let eggTimes = ["Soft": 3, "Medium": 4, "Hard": 7]
     
-    var counter = 60
+    var totalTime = 0
+    var secondsPassed = 0
     var timer = Timer()
     
-    @objc func updateCounter() {
-        //example functionality
-        if counter > 0 {
-            print("\(counter) seconds.")
-            counter -= 1
-        }
-        print("\(counter)")
-    }
+    var player: AVAudioPlayer!
     
     @IBAction func hardnessSelected(_ sender: UIButton) {
+        timer.invalidate()
         let hardness = sender.currentTitle!
-        let cookTime = eggTimes[hardness]!
-        print(cookTime)
+        totalTime = eggTimes[hardness]!
         
-        timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateCounter), userInfo: nil, repeats: false)
+        eggLabel.text = hardness
+        eggProgress.progress = 0.0
+        secondsPassed = 0
         
-        
-        
-//        if hardness == "Soft" {
-//            print(softTime)
-//        }
-//        else if hardness == "Medium" {
-//            print(mediumTime)
-//        }
-//        else {
-//            print(hardTime)
-//        }
-        
-//        // switch version
-//        switch hardness {
-//        case "Soft":
-//            print(softTime)
-//        case "Medium":
-//            print(mediumTime)
-//        case "Hard":
-//            print(hardTime)
-//        default:
-//            print("Error.")
-//        }
+        timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateCounter), userInfo: nil, repeats: true)
+    }
+    
+    @objc func updateCounter() {
+        if secondsPassed < totalTime {
+            secondsPassed += 1
+            eggProgress.progress = Float(secondsPassed) / Float(totalTime)
+            
+        } else {
+            timer.invalidate()
+            eggLabel.text = "Done!"
+            playSound(soundName: "alarm_sound")
+        }
+    }
+    
+    func playSound(soundName: String) {
+        let url = Bundle.main.url(forResource: soundName, withExtension: "mp3")
+        player = try! AVAudioPlayer(contentsOf: url!)
+        player.play()
     }
 }
